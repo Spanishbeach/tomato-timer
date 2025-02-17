@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>番茄钟</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background-color: #333;
+        }
+        #timer {
+            font-size: 18rem; /* 字体再放大1.5倍 */
+            font-weight: bold;
+            color: #f4f4f4;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        input[type="number"] {
+            padding: 10px;
+            font-size: 1rem;
+            width: 100px;
+            margin: 5px;
+        }
+        .fullscreen {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="fullscreen">
+        <div id="setup">
+            <h1>番茄钟</h1>
+            <div>
+                <button onclick="startTimer(15)">15分钟</button>
+                <button onclick="startTimer(20)">20分钟</button>
+                <button onclick="startTimer(30)">30分钟</button>
+                <button onclick="startTimer(60)">60分钟</button>
+            </div>
+            <div>
+                <input type="number" id="customTime" min="1" max="120" placeholder="自定义分钟">
+                <button onclick="startCustomTimer()">开始自定义</button>
+            </div>
+        </div>
+        <div id="timer" class="hidden">00:00:00</div>
+        <div id="restOptions" class="hidden">
+            <h2>休息时间</h2>
+            <button onclick="startRestTimer(5)">5分钟</button>
+            <button onclick="startRestTimer(8)">8分钟</button>
+            <button onclick="startRestTimer(10)">10分钟</button>
+        </div>
+    </div>
+
+    <script>
+        let timerInterval;
+        let endTime;
+
+        function startTimer(minutes) {
+            clearInterval(timerInterval);
+            const now = Date.now();
+            endTime = now + minutes * 60 * 1000;
+            document.getElementById('setup').classList.add('hidden');
+            document.getElementById('timer').classList.remove('hidden');
+            updateTimer();
+            timerInterval = setInterval(updateTimer, 1000);
+            requestFullscreen();
+        }
+
+        function startCustomTimer() {
+            const customTime = parseInt(document.getElementById('customTime').value);
+            if (customTime > 0) {
+                startTimer(customTime);
+            } else {
+                alert("请输入有效的分钟数！");
+            }
+        }
+
+        function updateTimer() {
+            const now = Date.now();
+            const remaining = endTime - now;
+            if (remaining <= 0) {
+                clearInterval(timerInterval);
+                document.getElementById('timer').textContent = "00:00:00";
+                playSound();
+                showRestOptions();
+                return;
+            }
+            const hours = Math.floor(remaining / 3600000);
+            const minutes = Math.floor((remaining % 3600000) / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            document.getElementById('timer').textContent = 
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function showRestOptions() {
+            document.getElementById('restOptions').classList.remove('hidden');
+        }
+
+        function startRestTimer(minutes) {
+            document.getElementById('restOptions').classList.add('hidden');
+            startTimer(minutes);
+        }
+
+        function playSound() {
+            const audio = new Audio('https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3');
+            audio.play();
+        }
+
+        function requestFullscreen() {
+            const elem = document.documentElement;
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.mozRequestFullScreen) { /* Firefox */
+                elem.mozRequestFullScreen();
+            } else if (elem.webkitRequestFullscreen) { /* Chrome, Safari & Opera */
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { /* IE/Edge */
+                elem.msRequestFullscreen();
+            }
+        }
+    </script>
+</body>
+</html>
